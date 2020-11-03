@@ -27,8 +27,10 @@ class Map:
         self.state = start
         # four actions are available, 0:left, 1: right, 2: down, 3: up
         self.action_map = [np.array([-1, 0]), np.array([1, 0]), np.array([0, -1]), np.array([0, 1])]
-        # slope of sigma/time, where sigma is the standard deviation of the noise
-        self.sigma_slope = 0.025
+        # slope of probability of the traffic clearing over time
+        self.f_slope = 0.05
+        # flap of whether the traffic has cleared up
+        self.cleared = False
         # minimum travel time for one block, used when adding noise to travel time
         self.min_travel_time = 0.5
         # penalty for not reaching the goal
@@ -45,14 +47,19 @@ class Map:
         next = self.state + self.action_map[action]
         # make sure the action does not go off the map
         next = np.maximum(np.minimum(next, self.n - 1), 0)
+        # check if the traffic has cleared or not
+        p = np.random.rand()
+        if not self.cleared and p < self.f_slope * self.time:
+            self.cleared = True
         # get the travel time for the action
         travel_time = 1
-        if np.linalg.norm(current - self.traffic) < 1e-5 or np.linalg.norm(next - self.traffic) < 1e-5:
-            travel_time = 2
-        elif np.linalg.norm(current - self.traffic) < 1 + 1e-5 or np.linalg.norm(next - self.traffic) < 1 + 1e-5:
-            travel_time = 1.5
+        if not self.cleared:
+            if np.linalg.norm(current - self.traffic) < 1e-5 or np.linalg.norm(next - self.traffic) < 1e-5:
+                travel_time = 2
+            elif np.linalg.norm(current - self.traffic) < 1 + 1e-5 or np.linalg.norm(next - self.traffic) < 1 + 1e-5:
+                travel_time = 1.5
         # add noise to the travel time, standard deviation of noise increase with time
-        travel_time += np.random.normal(0, self.sigma_slope * self.time)
+        # travel_time += np.random.normal(0, self.sigma_slope * self.time)
         # make sure the travel time is above a minimum to be realistic
         travel_time = max(travel_time, self.min_travel_time)
         # update state and time
@@ -77,6 +84,6 @@ class Map:
 
 
 if __name__ == '__main__':
-    sim_map = Map(5, np.array([0, 0]), np.array([4, 4]), np.array([3, 2]))
-    ref_path = [3, 3, 3, 3, 1, 1, 1, 1]
+    sim_map = Map(5, np.array([2, 0]), np.array([4, 4]), np.array([3, 2]))
+    ref_path = [1, 1, 3, 3, 3, 3]
     cost = sim_map.run(ref_path)
