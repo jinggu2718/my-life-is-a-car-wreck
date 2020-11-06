@@ -3,7 +3,7 @@ import numpy as np
 
 class Map:
     def __init__(self, n, start, goal, traffic):
-        # number of streets in each direction
+        # number of blocks in each direction
         self.n = n
         # np array, coordinate of starting point
         self.start = start
@@ -46,7 +46,7 @@ class Map:
         # calculate next state given action
         next = self.state + self.action_map[action]
         # make sure the action does not go off the map
-        next = np.maximum(np.minimum(next, self.n - 1), 0)
+        next = np.maximum(np.minimum(next, self.n), 0)
         # check if the traffic has cleared or not
         p = np.random.rand()
         if not self.cleared and p < self.f_slope * self.time:
