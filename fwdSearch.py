@@ -49,23 +49,22 @@ def fwdSearch(model, state, d):
 	# Note to self: start from 0 for action numbering
 	if d <= 0:
 		aBest = None
-		uBest = abs(self.map.goal[0] - current[0]) + abs(self.map.goal[1] - current[1])
+		uBest = abs(model.map.goal[0] - current[0]) + abs(model.map.goal[1] - current[1])
 	else:
 	    aBest = None
 	    uBest = -np.inf
 	    for a in range(len(model.map.action_map)):
-            t,r = model.step(state,a)
-			u = r
+	    	t, r = model.step(state,a)
+	    	u = r
 
-			for s in t.keys():
-			# Recursive calling for specified depth
-				_, uNext = fwdSearch(model,s,d-1)
-				u += t[s] * uNext
-
-			if u > uBest:
-				uBest = u
-				aBest = a
-	return aBest, uBest
+	    	for s in t.keys():
+	    	# Recursive calling
+	    		_,uNext = fwdSearch(model,s,d-1)
+	    		u += t[s]*uNext
+    		if u >uBest:
+    			uBest = u
+    			aBest = a
+	return aBest,uBest
 
 
 if __name__ == '__main__':
