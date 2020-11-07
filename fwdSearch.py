@@ -41,15 +41,15 @@ class Model:
                     travTime = 1.5
                 nextS = (tuple(next),0,time + travTime)
                 transition[nextS] = 1 - probClear
-                reward += - (1 - probClear) * travTime
+                reward += -(1 - probClear) * travTime
         return transition, reward
 
 def fwdSearch(model, state, d):
-	current = state[0];
+	current = state[0]
 	# Note to self: start from 0 for action numbering
 	if d <= 0:
 		aBest = None
-		uBest = abs(model.map.goal[0] - current[0]) + abs(model.map.goal[1] - current[1])
+		uBest = -(abs(model.map.goal[0] - current[0]) + abs(model.map.goal[1] - current[1]))
 	else:
 	    aBest = None
 	    uBest = -np.inf
@@ -61,7 +61,7 @@ def fwdSearch(model, state, d):
 	    	# Recursive calling
 	    		_,uNext = fwdSearch(model,s,d-1)
 	    		u += t[s]*uNext
-    		if u >uBest:
+    		if u > uBest:
     			uBest = u
     			aBest = a
 	return aBest,uBest
