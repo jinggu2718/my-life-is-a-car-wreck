@@ -45,27 +45,27 @@ class Model:
         return transition, reward
 
 def fwdSearch(model, state, d):
+	current = state[0];
 	# Note to self: start from 0 for action numbering
-    if d <= 0:
-        aBest = None
-        uBest = np.linalg.norm(state[0] - model.map.goal)
-    else:
-        aBest = None
-        uBest = -np.inf
+	if d <= 0:
+		aBest = None
+		uBest = abs(self.map.goal[0] - current[0]) + abs(self.map.goal[1] - current[1])
+	else:
+	    aBest = None
+	    uBest = -np.inf
+	    for a in range(len(model.map.action_map)):
+            t,r = model.step(state,a)
+			u = r
 
-        for a in range(len(model.map.action_map)):
-            t, r = model.step(state, a)
-            u = r
+			for s in t.keys():
+			# Recursive calling for specified depth
+				_, uNext = fwdSearch(model,s,d-1)
+				u += t[s] * uNext
 
-            for s in t.keys():
-            	# Recursive calling for specified depth
-                _, u_next = fwdSearch(model,s, d-1)
-                u += t[s] * u_next
-
-            if u > uBest:
-                uBest = u
-                aBest = a
-    return aBest, uBest
+			if u > uBest:
+				uBest = u
+				aBest = a
+	return aBest, uBest
 
 
 if __name__ == '__main__':
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     maxIter = 7
     while np.linalg.norm(map.state - map.goal) > 1e-5 and \
     		count <= maxIter:
-        a, _ = fwdSearch(model, (map.state, map.cleared, map.time), d)
+        a, _ = fwdSearch(model,(map.state, map.cleared, map.time), d)
         print('Taking action {0} from state {1} at time {2}'.format(a, map.state, map.time))
         actions.append(a)
         map.step(a)
