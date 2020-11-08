@@ -83,7 +83,7 @@ class Map:
         return cost
 
 
-if __name__ == '__main__':
-    sim_map = Map(5, np.array([2, 0]), np.array([4, 4]), np.array([3, 2]))
-    ref_path = [1, 1, 3, 3, 3, 3]
-    cost = sim_map.run(ref_path)
+# if __name__ == '__main__':
+#     sim_map = Map(5, np.array([2, 0]), np.array([4, 4]), np.array([3, 2]))
+#     ref_path = [1, 1, 3, 3, 3, 3]
+#     cost = sim_map.run(ref_path)
