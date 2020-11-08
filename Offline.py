@@ -4,7 +4,7 @@ import time
 
 class Offline():
     """Solves for optimal route"""
-    def __init__(self,map,discount_factor,k_max,max_t=45):
+    def __init__(self,map,k_max,discount_factor=1,max_t=45):
         self.map = map 
         self.num_a = len(map.action_map)
         self.DF = discount_factor
@@ -104,45 +104,59 @@ class Offline():
         num = len(self.state_space)
         policy = np.zeros((num,))
 
-        for s_m_1 in range(num):
-            s = s_m_1 + 1
+        for s in self.U_mapping.keys():
             term_u = np.zeros((self.num_a,))
             term_a = np.zeros((self.num_a,))
             i_a = 0
-            for a in self.map.action_map:
-                term_u[i_a] = self.lookahead(U,s,a)
+            for a in [0,1,2,3]:
+                action = self.map.action_map[a]
+                term_u[i_a] = self.lookahead(U,s,action)
                 term_a[i_a] = a
                 i_a += 1
             i = np.argmax(term_u)
-            policy[s_m_1] = term_a[i]
+            policy[self.U_mapping[s]] = term_a[i]
         return policy
 
     def compute(self):
-        start = time.time()
         num = len(self.state_space)
         U = np.zeros((num,))
         for k in range(self.k_max): # 139
             for s in self.state_space:
                 u = self.backup(U,s)
                 U[self.U_mapping[s]] = u
-        #self.policy = self.ValFPoly(U)
-        endings = time.time()
-        print("time,final", endings-start)
+        self.policy = self.ValFPoly(U)        
 
     def comp_path(self):
         path = []
+        states = [(tuple(self.map.state),self.map.time,self.map.cleared)]
+        while True:
+            #print("intersection", states[-1][0])
+            i = self.U_mapping[states[-1]]
+            action = int(self.policy[i])
+            path.append(action)
+            self.map.step(action)
+            states.append((tuple(self.map.state),self.map.time,self.map.cleared))
+            if self.map.time >=self.max_t:
+                print("error, max time reached")
+                break
+            if (self.map.state == self.map.goal).all():
+                break
         return path
         
 def main():
+    """
+    Map(n, start, goal, traffic)
+    ref_path = [1, 1, 3, 3, 3, 3]
+    """
+    start = time.time()
     sim_map = Map(5, np.array([2, 0]), np.array([4, 4]), np.array([3, 2]))
-    Value_it = Offline(sim_map,1,20)
+    Value_it = Offline(sim_map,10)
     Value_it.compute()
     path = Value_it.comp_path()
-
-    """
-    ref_path = [1, 1, 3, 3, 3, 3]
-    cost = sim_map.run(ref_path)
-    """
+    print("final path",path)
+    print('total cost {}'.format(Value_it.map.time))
+    endings = time.time()
+    print("final time:", endings-start)
 
 if __name__ == '__main__':
     main()
